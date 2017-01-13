@@ -152,31 +152,42 @@ PREVIOUS_CFLAGS="${CFLAGS}"
 PREVIOUS_LIBS="${LIBS}"
 
 .for use
-. if use.libname ?<> ""
+. if use.libname ?<> "" | use.pkgconfig ?<> ""
 
 was_$(use.project:c)_check_lib_detected=no
 
-PKG_CHECK_MODULES([$(use.project:c)], [$(use.libname) >= $(use.min_version)\
+. if use.pkgconfig ?<> ""
+PKG_CHECK_MODULES([$(use.project:c)], [$(use.pkgconfig) >= $(use.min_version)\
 .  if defined(use.max_version)
- $(use.libname) <= $(use.max_version)\
+ $(use.pkgconfig) <= $(use.max_version)\
 .  endif
 .  if defined(use.next_incompatible_version)
- $(use.libname) < $(use.next_incompatible_version)\
+ $(use.pkgconfig) < $(use.next_incompatible_version)\
 .  endif
 ],
     [
 .  if optional
-        AC_DEFINE(HAVE_$(USE.AM_LIB_MACRO), 1, [The $(use.libname) library is to be used])
+        AC_DEFINE(HAVE_$(USE.AM_LIB_MACRO), 1, [The\
+. if use.pkgconfig ?<> "" & use.pkgconfig ?<> use.libname
+ $(use.pkgconfig) pkg-config metadata\
+.   endif
+. if use.libname ?<> ""
+ $(use.libname) library\
+ is to be used])
+.   endif
 .  endif
         PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE $$(use.project:c)_LIBS"
     ],
     [
-.  if defined(use.test)
-        AC_MSG_NOTICE([Package $(use.libname) not found\
+. endif
+.  if defined(use.test) & use.libname ?<> ""
+.   if use.pkgconfig ?<> ""
+        AC_MSG_NOTICE([Package $(use.pkgconfig) not found\
 .       if !(use.min_version = '0.0.0') | defined(use.max_version) |defined(use.next_incompatible_version)
  with needed constraints\
 .       endif
 ; falling back to defined compilability tests])
+.   endif
         AC_ARG_WITH([$(use.libname)],
             [
                 AS_HELP_STRING([--with-$(use.libname)],
@@ -225,8 +236,10 @@ PKG_CHECK_MODULES([$(use.project:c)], [$(use.libname) >= $(use.min_version)\
 .       else
         AC_MSG_ERROR([\
 .       endif
-Cannot find $(use.libname)\
-.       if defined(use.max_version) | defined(use.next_incompatible_version)
+Cannot find\
+.       if use.pkgconfig ?<> ""
+ pkg-config metadata for $(use.libname)\
+.        if defined(use.max_version) | defined(use.next_incompatible_version)
  >= $(use.min_version)\
 .           if defined(use.max_version)
  and <= $(use.max_version)\
@@ -234,12 +247,18 @@ Cannot find $(use.libname)\
 .           if defined(use.next_incompatible_version)
  and < $(use.next_incompatible_version)\
 .           endif
-.       else
+.        else
  $(use.min_version) or higher\
+.        endif
+.       endif
+.       if use.libname ?<> "" & use.pkgconfig ?<> use.libname
+ library $(use.libname)\
 .       endif
 , and no compilability tests were defined either])
 .   endif
+.if use.pkgconfig ?<> ""
     ])
+.endif
 
 if test "x$was_$(use.project:c)_check_lib_detected" = "xno"; then
     CFLAGS="${$(use.project:c)_CFLAGS} ${CFLAGS}"
