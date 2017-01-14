@@ -168,18 +168,21 @@ PKG_CHECK_MODULES([$(use.project:c)], [$(use.pkgconfig) >= $(use.min_version)\
     [
 .  if optional
         AC_DEFINE(HAVE_$(USE.AM_LIB_MACRO), 1, [The\
-. if use.pkgconfig ?<> "" & use.pkgconfig ?<> use.libname
+.# At least one of these values is available, per check above
+.   if use.pkgconfig ?<> "" & use.pkgconfig ?<> use.libname
  $(use.pkgconfig) pkg-config metadata\
 .   endif
-. if use.libname ?<> ""
+.   if use.libname ?<> ""
  $(use.libname) library\
- is to be used])
 .   endif
+ is to be used])
 .  endif
         PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE $$(use.project:c)_LIBS"
     ],
     [
 . endif
+.# Code below is either fallback for failed pkgconfig search
+.# (if string was not empty) or a standalone linkability test
 .  if defined(use.test) & use.libname ?<> ""
 .   if use.pkgconfig ?<> ""
         AC_MSG_NOTICE([Package $(use.pkgconfig) not found\
@@ -231,6 +234,7 @@ PKG_CHECK_MODULES([$(use.project:c)], [$(use.pkgconfig) >= $(use.min_version)\
             [AC_MSG_ERROR([cannot link with -l$(use.linkname), install $(use.libname)])])
 .       endif
 .   else
+.# No data defined to use a linkability test
 .       if optional
         AC_MSG_WARN([\
 .       else
@@ -257,6 +261,7 @@ Cannot find\
 , and no compilability tests were defined either])
 .   endif
 .if use.pkgconfig ?<> ""
+.# if string was empty, code above was a standalone linkability test
     ])
 .endif
 
