@@ -18,33 +18,34 @@ pipeline {
     stages {
         stage ('prepare') {
             steps {
+                checkout scm
                 sh './autogen.sh'
-                stash (name: 'prepped')
+                stash (name: 'prepped', includes: '**/*')
             }
         }
         stage ('compile') {
             parallel {
                 stage ('build with DRAFT') {
                     steps {
-                        unstash (name: 'prepped')
+                        unstash 'prepped'
                         sh './configure --enable-drafts=yes'
                         sh 'make -k -j4 || make'
                         sh 'echo "Are GitIgnores good after make with drafts? (should have no output below)"; git status -s || true'
-                        stash (name: 'built-draft')
+                        stash (name: 'built-draft', includes: '**/*')
                     }
                 }
                 stage ('build without DRAFT') {
                     steps {
-                        unstash (name: 'prepped')
+                        unstash 'prepped'
                         sh './configure --enable-drafts=no'
                         sh 'make -k -j4 || make'
                         sh 'echo "Are GitIgnores good after make without drafts? (should have no output below)"; git status -s || true'
-                        stash (name: 'built-nondraft')
+                        stash (name: 'built-nondraft', includes: '**/*')
                     }
                 }
                 stage ('build with DOCS') {
                     steps {
-                        unstash (name: 'prepped')
+                        unstash 'prepped'
                         sh './configure --enable-drafts=yes --with-docs=yes'
                         sh 'make -k -j4 || make'
                         sh 'echo "Are GitIgnores good after make with docs? (should have no output below)"; git status -s || true'
@@ -56,7 +57,7 @@ pipeline {
             parallel {
                 stage ('check with DRAFT') {
                     steps {
-                        unstash (name: 'built-draft')
+                        unstash 'built-draft'
                         timeout (time: 5, unit: 'MINUTES') {
                             sh 'make check'
                         }
@@ -65,7 +66,7 @@ pipeline {
                 }
                 stage ('check without DRAFT') {
                     steps {
-                        unstash (name: 'built-nondraft')
+                        unstash 'built-nondraft'
                         timeout (time: 5, unit: 'MINUTES') {
                             sh 'make check'
                         }
@@ -78,7 +79,7 @@ pipeline {
             parallel {
                 stage ('memcheck with DRAFT') {
                     steps {
-                        unstash (name: 'built-draft')
+                        unstash 'built-draft'
                         timeout (time: 5, unit: 'MINUTES') {
                             sh 'make memcheck && exit 0 ; echo "Re-running failed ($?) memcheck with greater verbosity" >&2 ; make VERBOSE=1 memcheck-verbose'
                         }
@@ -87,7 +88,7 @@ pipeline {
                 }
                 stage ('memcheck without DRAFT') {
                     steps {
-                        unstash (name: 'built-nondraft')
+                        unstash 'built-nondraft'
                         timeout (time: 5, unit: 'MINUTES') {
                             sh 'make memcheck && exit 0 ; echo "Re-running failed ($?) memcheck with greater verbosity" >&2 ; make VERBOSE=1 memcheck-verbose'
                         }
@@ -100,7 +101,7 @@ pipeline {
             parallel {
                 stage ('distcheck with DRAFT') {
                     steps {
-                        unstash (name: 'built-draft')
+                        unstash 'built-draft'
                         timeout (time: 10, unit: 'MINUTES') {
                             sh 'make distcheck'
                         }
@@ -109,7 +110,7 @@ pipeline {
                 }
                 stage ('distcheck without DRAFT') {
                     steps {
-                        unstash (name: 'built-nondraft')
+                        unstash 'built-nondraft'
                         timeout (time: 10, unit: 'MINUTES') {
                             sh 'make distcheck'
                         }
