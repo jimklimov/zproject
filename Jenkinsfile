@@ -25,7 +25,6 @@ pipeline {
         stage ('compile and test') {
             parallel {
                 stage ('build and check with DRAFT') {
-                    stage ('build with DRAFT') {
                         steps {
                             unstash 'prepped'
                             sh './configure --enable-drafts=yes'
@@ -33,7 +32,6 @@ pipeline {
                             sh 'echo "Are GitIgnores good after make with drafts? (should have no output below)"; git status -s || true'
                             stash (name: 'built-draft', includes: '**/*')
                         }
-                    }
                     parallel {
                         stage ('check with DRAFT') {
                             steps {
@@ -65,7 +63,6 @@ pipeline {
                     }
                 }
                 stage ('build and check without DRAFT') {
-                    stage ('build without DRAFT') {
                         steps {
                             unstash 'prepped'
                             sh './configure --enable-drafts=no'
@@ -73,7 +70,6 @@ pipeline {
                             sh 'echo "Are GitIgnores good after make without drafts? (should have no output below)"; git status -s || true'
                             stash (name: 'built-nondraft', includes: '**/*')
                         }
-                    }
                     parallel {
                         stage ('check without DRAFT') {
                             steps {
