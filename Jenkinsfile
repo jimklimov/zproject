@@ -22,82 +22,24 @@ pipeline {
                 stash (name: 'prepped', includes: '**/*')
             }
         }
-        stage ('compile and test') {
+        stage ('compile') {
             parallel {
-                stage ('build and check with DRAFT') {
-                        steps {
-                            unstash 'prepped'
-                            sh './configure --enable-drafts=yes'
-                            sh 'make -k -j4 || make'
-                            sh 'echo "Are GitIgnores good after make with drafts? (should have no output below)"; git status -s || true'
-                            stash (name: 'built-draft', includes: '**/*')
-                        }
-                    parallel {
-                        stage ('check with DRAFT') {
-                            steps {
-                                unstash 'built-draft'
-                                timeout (time: 5, unit: 'MINUTES') {
-                                    sh 'make check'
-                                }
-                                sh 'echo "Are GitIgnores good after make check with drafts? (should have no output below)"; git status -s || true'
-                            }
-                        }
-                        stage ('memcheck with DRAFT') {
-                            steps {
-                                unstash 'built-draft'
-                                timeout (time: 5, unit: 'MINUTES') {
-                                    sh 'make memcheck && exit 0 ; echo "Re-running failed ($?) memcheck with greater verbosity" >&2 ; make VERBOSE=1 memcheck-verbose'
-                                }
-                                sh 'echo "Are GitIgnores good after make memcheck with drafts? (should have no output below)"; git status -s || true'
-                            }
-                        }
-                        stage ('distcheck with DRAFT') {
-                            steps {
-                                unstash 'built-draft'
-                                timeout (time: 10, unit: 'MINUTES') {
-                                    sh 'make distcheck'
-                                }
-                                sh 'echo "Are GitIgnores good after make distcheck with drafts? (should have no output below)"; git status -s || true'
-                            }
-                        }
+                stage ('build with DRAFT') {
+                    steps {
+                        unstash 'prepped'
+                        sh './configure --enable-drafts=yes'
+                        sh 'make -k -j4 || make'
+                        sh 'echo "Are GitIgnores good after make with drafts? (should have no output below)"; git status -s || true'
+                        stash (name: 'built-draft', includes: '**/*')
                     }
                 }
-                stage ('build and check without DRAFT') {
-                        steps {
-                            unstash 'prepped'
-                            sh './configure --enable-drafts=no'
-                            sh 'make -k -j4 || make'
-                            sh 'echo "Are GitIgnores good after make without drafts? (should have no output below)"; git status -s || true'
-                            stash (name: 'built-nondraft', includes: '**/*')
-                        }
-                    parallel {
-                        stage ('check without DRAFT') {
-                            steps {
-                                unstash 'built-nondraft'
-                                timeout (time: 5, unit: 'MINUTES') {
-                                    sh 'make check'
-                                }
-                                sh 'echo "Are GitIgnores good after make check without drafts? (should have no output below)"; git status -s || true'
-                            }
-                        }
-                        stage ('memcheck without DRAFT') {
-                            steps {
-                                unstash 'built-nondraft'
-                                timeout (time: 5, unit: 'MINUTES') {
-                                    sh 'make memcheck && exit 0 ; echo "Re-running failed ($?) memcheck with greater verbosity" >&2 ; make VERBOSE=1 memcheck-verbose'
-                                }
-                                sh 'echo "Are GitIgnores good after make memcheck without drafts? (should have no output below)"; git status -s || true'
-                            }
-                        }
-                        stage ('distcheck without DRAFT') {
-                            steps {
-                                unstash 'built-nondraft'
-                                timeout (time: 10, unit: 'MINUTES') {
-                                    sh 'make distcheck'
-                                }
-                                sh 'echo "Are GitIgnores good after make distcheck without drafts? (should have no output below)"; git status -s || true'
-                            }
-                        }
+                stage ('build without DRAFT') {
+                    steps {
+                        unstash 'prepped'
+                        sh './configure --enable-drafts=no'
+                        sh 'make -k -j4 || make'
+                        sh 'echo "Are GitIgnores good after make without drafts? (should have no output below)"; git status -s || true'
+                        stash (name: 'built-nondraft', includes: '**/*')
                     }
                 }
                 stage ('build with DOCS') {
@@ -106,6 +48,64 @@ pipeline {
                         sh './configure --enable-drafts=yes --with-docs=yes'
                         sh 'make -k -j4 || make'
                         sh 'echo "Are GitIgnores good after make with docs? (should have no output below)"; git status -s || true'
+                    }
+                }
+            }
+        }
+        stage ('check') {
+            parallel {
+                stage ('check with DRAFT') {
+                    steps {
+                        unstash 'built-draft'
+                        timeout (time: 5, unit: 'MINUTES') {
+                            sh 'make check'
+                        }
+                        sh 'echo "Are GitIgnores good after make check with drafts? (should have no output below)"; git status -s || true'
+                    }
+                }
+                stage ('check without DRAFT') {
+                    steps {
+                        unstash 'built-nondraft'
+                        timeout (time: 5, unit: 'MINUTES') {
+                            sh 'make check'
+                        }
+                        sh 'echo "Are GitIgnores good after make check without drafts? (should have no output below)"; git status -s || true'
+                    }
+                }
+                stage ('memcheck with DRAFT') {
+                    steps {
+                        unstash 'built-draft'
+                        timeout (time: 5, unit: 'MINUTES') {
+                            sh 'make memcheck && exit 0 ; echo "Re-running failed ($?) memcheck with greater verbosity" >&2 ; make VERBOSE=1 memcheck-verbose'
+                        }
+                        sh 'echo "Are GitIgnores good after make memcheck with drafts? (should have no output below)"; git status -s || true'
+                    }
+                }
+                stage ('memcheck without DRAFT') {
+                    steps {
+                        unstash 'built-nondraft'
+                        timeout (time: 5, unit: 'MINUTES') {
+                            sh 'make memcheck && exit 0 ; echo "Re-running failed ($?) memcheck with greater verbosity" >&2 ; make VERBOSE=1 memcheck-verbose'
+                        }
+                        sh 'echo "Are GitIgnores good after make memcheck without drafts? (should have no output below)"; git status -s || true'
+                    }
+                }
+                stage ('distcheck with DRAFT') {
+                    steps {
+                        unstash 'built-draft'
+                        timeout (time: 10, unit: 'MINUTES') {
+                            sh 'make distcheck'
+                        }
+                        sh 'echo "Are GitIgnores good after make distcheck with drafts? (should have no output below)"; git status -s || true'
+                    }
+                }
+                stage ('distcheck without DRAFT') {
+                    steps {
+                        unstash 'built-nondraft'
+                        timeout (time: 10, unit: 'MINUTES') {
+                            sh 'make distcheck'
+                        }
+                        sh 'echo "Are GitIgnores good after make distcheck without drafts? (should have no output below)"; git status -s || true'
                     }
                 }
             }
