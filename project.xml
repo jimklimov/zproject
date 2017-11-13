@@ -177,13 +177,18 @@
          Pipeline file is not overwriten if it exists.
          A "make distcheck" is enabled by default, though some
          projects tend to opt out of supporting that functionality.
+         Your projects can build under a docker container OR agents
+         matched by a label OR under an "any" agent by default.
     <target name = "jenkins">
         <option name = "file" value = "Jenkinsfile" />
-        <option name = "docker" value = "zeromqorg/czmq" />
+        <option name = "agent_docker" value = "zeromqorg/czmq" />
+        <option name = "agent_label" value = "linux | macosx | windows" />
         <option name = "distcheck" value = "0" />
     </target>
     -->
-    <target name = "jenkins" />
+    <target name = "jenkins" >
+        <option name = "agent_label" value = "linux | macosx | windows" />
+    </target>
 
     <!-- In order loaded by zproject.gsl -->
     <bin name = "zproject.gsl" />
