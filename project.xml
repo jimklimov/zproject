@@ -185,13 +185,13 @@
     <target name = "jenkins">
         <option name = "file" value = "Jenkinsfile" />
         <option name = "agent_docker" value = "zeromqorg/czmq" />
-        <option name = "agent_label" value = "linux || macosx || windows" />
+        <option name = "agent_label" value = "linux || macosx || bsd || solaris || posix || windows" />
         <option name = "agent_single" value = "1" />
         <option name = "distcheck" value = "0" />
     </target>
     -->
     <target name = "jenkins" >
-        <option name = "agent_label" value = "linux || macosx || windows" />
+        <option name = "agent_label" value = "linux || macosx || bsd || solaris || posix || windows" />
         <option name = "agent_single" value = "1" />
     </target>
 
