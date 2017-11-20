@@ -26,7 +26,7 @@ pipeline {
             parallel {
                 stage ('build with DRAFT') {
                     steps {
-                      dir(".build/withDRAFT") {
+                      dir("tmp/build-withDRAFT") {
                         deleteDir()
                         unstash 'prepped'
                         sh './configure --enable-drafts=yes'
@@ -38,7 +38,7 @@ pipeline {
                 }
                 stage ('build without DRAFT') {
                     steps {
-                      dir(".build/withoutDRAFT") {
+                      dir("tmp/build-withoutDRAFT") {
                         deleteDir()
                         unstash 'prepped'
                         sh './configure --enable-drafts=no'
@@ -50,7 +50,7 @@ pipeline {
                 }
                 stage ('build with DOCS') {
                     steps {
-                      dir(".build/DOCS") {
+                      dir("tmp/build-DOCS") {
                         deleteDir()
                         unstash 'prepped'
                         sh './configure --enable-drafts=yes --with-docs=yes'
@@ -65,7 +65,7 @@ pipeline {
             parallel {
                 stage ('check with DRAFT') {
                     steps {
-                      dir(".test/check-withDRAFT") {
+                      dir("tmp/test-check-withDRAFT") {
                         deleteDir()
                         unstash 'built-draft'
                         timeout (time: 5, unit: 'MINUTES') {
@@ -77,7 +77,7 @@ pipeline {
                 }
                 stage ('check without DRAFT') {
                     steps {
-                      dir(".test/check-withoutDRAFT") {
+                      dir("tmp/test-check-withoutDRAFT") {
                         deleteDir()
                         unstash 'built-nondraft'
                         timeout (time: 5, unit: 'MINUTES') {
@@ -89,7 +89,7 @@ pipeline {
                 }
                 stage ('memcheck with DRAFT') {
                     steps {
-                      dir(".test/memcheck-withDRAFT") {
+                      dir("tmp/test-memcheck-withDRAFT") {
                         deleteDir()
                         unstash 'built-draft'
                         timeout (time: 5, unit: 'MINUTES') {
@@ -101,7 +101,7 @@ pipeline {
                 }
                 stage ('memcheck without DRAFT') {
                     steps {
-                      dir(".test/memcheck-withoutDRAFT") {
+                      dir("tmp/test-memcheck-withoutDRAFT") {
                         deleteDir()
                         unstash 'built-nondraft'
                         timeout (time: 5, unit: 'MINUTES') {
@@ -113,7 +113,7 @@ pipeline {
                 }
                 stage ('distcheck with DRAFT') {
                     steps {
-                      dir(".test/distcheck-withDRAFT") {
+                      dir("tmp/test-distcheck-withDRAFT") {
                         deleteDir()
                         unstash 'built-draft'
                         timeout (time: 10, unit: 'MINUTES') {
@@ -125,7 +125,7 @@ pipeline {
                 }
                 stage ('distcheck without DRAFT') {
                     steps {
-                      dir(".test/distcheck-withoutDRAFT") {
+                      dir("tmp/test-distcheck-withoutDRAFT") {
                         deleteDir()
                         unstash 'built-nondraft'
                         timeout (time: 10, unit: 'MINUTES') {
