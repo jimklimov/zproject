@@ -90,7 +90,7 @@ pipeline {
 .       jenkins_agent (project, 0)
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
-                      dir(".build/withDRAFT") {
+                      dir("tmp/build-withDRAFT") {
                         deleteDir()
 .       endif
                         unstash 'prepped'
@@ -107,7 +107,7 @@ pipeline {
 .       jenkins_agent (project, 0)
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
-                      dir(".build/withoutDRAFT") {
+                      dir("tmp/build-withoutDRAFT") {
                         deleteDir()
 .       endif
                         unstash 'prepped'
@@ -124,7 +124,7 @@ pipeline {
 .       jenkins_agent (project, 0)
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
-                      dir(".build/DOCS") {
+                      dir("tmp/build-DOCS") {
                         deleteDir()
 .       endif
                         unstash 'prepped'
@@ -144,7 +144,7 @@ pipeline {
 .       jenkins_agent (project, 0)
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
-                      dir(".test/check-withDRAFT") {
+                      dir("tmp/test-check-withDRAFT") {
                         deleteDir()
 .       endif
                         unstash 'built-draft'
@@ -161,7 +161,7 @@ pipeline {
 .       jenkins_agent (project, 0)
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
-                      dir(".test/check-withoutDRAFT") {
+                      dir("tmp/test-check-withoutDRAFT") {
                         deleteDir()
 .       endif
                         unstash 'built-nondraft'
@@ -178,7 +178,7 @@ pipeline {
 .       jenkins_agent (project, 0)
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
-                      dir(".test/memcheck-withDRAFT") {
+                      dir("tmp/test-memcheck-withDRAFT") {
                         deleteDir()
 .       endif
                         unstash 'built-draft'
@@ -195,7 +195,7 @@ pipeline {
 .       jenkins_agent (project, 0)
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
-                      dir(".test/memcheck-withoutDRAFT") {
+                      dir("tmp/test-memcheck-withoutDRAFT") {
                         deleteDir()
 .       endif
                         unstash 'built-nondraft'
@@ -214,7 +214,7 @@ pipeline {
 .       jenkins_agent (project, 0)
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
-                      dir(".test/distcheck-withDRAFT") {
+                      dir("tmp/test-distcheck-withDRAFT") {
                         deleteDir()
 .       endif
                         unstash 'built-draft'
@@ -231,7 +231,7 @@ pipeline {
 .       jenkins_agent (project, 0)
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
-                      dir(".test/distcheck-withoutDRAFT") {
+                      dir("tmp/test-distcheck-withoutDRAFT") {
                         deleteDir()
 .       endif
                         unstash 'built-nondraft'
