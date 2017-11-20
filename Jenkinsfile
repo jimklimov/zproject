@@ -17,7 +17,7 @@ pipeline {
     }
     stages {
         stage ('prepare') {
-    agent { label "linux || macosx || windows" }
+                agent { label "linux || macosx || bsd || solaris || posix || windows" }
             steps {
                 sh './autogen.sh'
                 stash (name: 'prepped', includes: '**/*')
@@ -26,7 +26,7 @@ pipeline {
         stage ('compile') {
             parallel {
                 stage ('build with DRAFT') {
-    agent { label "linux || macosx || windows" }
+                agent { label "linux || macosx || bsd || solaris || posix || windows" }
                     steps {
                         unstash 'prepped'
                         sh './configure --enable-drafts=yes'
@@ -36,7 +36,7 @@ pipeline {
                     }
                 }
                 stage ('build without DRAFT') {
-    agent { label "linux || macosx || windows" }
+                agent { label "linux || macosx || bsd || solaris || posix || windows" }
                     steps {
                         unstash 'prepped'
                         sh './configure --enable-drafts=no'
@@ -46,7 +46,7 @@ pipeline {
                     }
                 }
                 stage ('build with DOCS') {
-    agent { label "linux || macosx || windows" }
+                agent { label "linux || macosx || bsd || solaris || posix || windows" }
                     steps {
                         unstash 'prepped'
                         sh './configure --enable-drafts=yes --with-docs=yes'
@@ -59,7 +59,7 @@ pipeline {
         stage ('check') {
             parallel {
                 stage ('check with DRAFT') {
-    agent { label "linux || macosx || windows" }
+                agent { label "linux || macosx || bsd || solaris || posix || windows" }
                     steps {
                         unstash 'built-draft'
                         timeout (time: 5, unit: 'MINUTES') {
@@ -69,7 +69,7 @@ pipeline {
                     }
                 }
                 stage ('check without DRAFT') {
-    agent { label "linux || macosx || windows" }
+                agent { label "linux || macosx || bsd || solaris || posix || windows" }
                     steps {
                         unstash 'built-nondraft'
                         timeout (time: 5, unit: 'MINUTES') {
@@ -79,7 +79,7 @@ pipeline {
                     }
                 }
                 stage ('memcheck with DRAFT') {
-    agent { label "linux || macosx || windows" }
+                agent { label "linux || macosx || bsd || solaris || posix || windows" }
                     steps {
                         unstash 'built-draft'
                         timeout (time: 5, unit: 'MINUTES') {
@@ -89,7 +89,7 @@ pipeline {
                     }
                 }
                 stage ('memcheck without DRAFT') {
-    agent { label "linux || macosx || windows" }
+                agent { label "linux || macosx || bsd || solaris || posix || windows" }
                     steps {
                         unstash 'built-nondraft'
                         timeout (time: 5, unit: 'MINUTES') {
@@ -99,7 +99,7 @@ pipeline {
                     }
                 }
                 stage ('distcheck with DRAFT') {
-    agent { label "linux || macosx || windows" }
+                agent { label "linux || macosx || bsd || solaris || posix || windows" }
                     steps {
                         unstash 'built-draft'
                         timeout (time: 10, unit: 'MINUTES') {
@@ -109,7 +109,7 @@ pipeline {
                     }
                 }
                 stage ('distcheck without DRAFT') {
-    agent { label "linux || macosx || windows" }
+                agent { label "linux || macosx || bsd || solaris || posix || windows" }
                     steps {
                         unstash 'built-nondraft'
                         timeout (time: 10, unit: 'MINUTES') {
