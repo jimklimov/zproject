@@ -11,9 +11,7 @@
 */
 
 pipeline {
-    agent {
-        label "linux || macosx || windows"
-    }
+                agent { label "linux || macosx || bsd || solaris || posix || windows" }
     triggers {
         pollSCM 'H/5 * * * *'
     }
@@ -28,28 +26,37 @@ pipeline {
             parallel {
                 stage ('build with DRAFT') {
                     steps {
+                      dir(".build/withDRAFT") {
+                        deleteDir()
                         unstash 'prepped'
                         sh './configure --enable-drafts=yes'
                         sh 'make -k -j4 || make'
                         sh 'echo "Are GitIgnores good after make with drafts? (should have no output below)"; git status -s || true'
                         stash (name: 'built-draft', includes: '**/*')
+                      }
                     }
                 }
                 stage ('build without DRAFT') {
                     steps {
+                      dir(".build/withoutDRAFT") {
+                        deleteDir()
                         unstash 'prepped'
                         sh './configure --enable-drafts=no'
                         sh 'make -k -j4 || make'
                         sh 'echo "Are GitIgnores good after make without drafts? (should have no output below)"; git status -s || true'
                         stash (name: 'built-nondraft', includes: '**/*')
+                      }
                     }
                 }
                 stage ('build with DOCS') {
                     steps {
+                      dir(".build/DOCS") {
+                        deleteDir()
                         unstash 'prepped'
                         sh './configure --enable-drafts=yes --with-docs=yes'
                         sh 'make -k -j4 || make'
                         sh 'echo "Are GitIgnores good after make with docs? (should have no output below)"; git status -s || true'
+                      }
                     }
                 }
             }
@@ -58,56 +65,74 @@ pipeline {
             parallel {
                 stage ('check with DRAFT') {
                     steps {
+                      dir(".test/check-withDRAFT") {
+                        deleteDir()
                         unstash 'built-draft'
                         timeout (time: 5, unit: 'MINUTES') {
                             sh 'make check'
                         }
                         sh 'echo "Are GitIgnores good after make check with drafts? (should have no output below)"; git status -s || true'
+                      }
                     }
                 }
                 stage ('check without DRAFT') {
                     steps {
+                      dir(".test/check-withoutDRAFT") {
+                        deleteDir()
                         unstash 'built-nondraft'
                         timeout (time: 5, unit: 'MINUTES') {
                             sh 'make check'
                         }
                         sh 'echo "Are GitIgnores good after make check without drafts? (should have no output below)"; git status -s || true'
+                      }
                     }
                 }
                 stage ('memcheck with DRAFT') {
                     steps {
+                      dir(".test/memcheck-withDRAFT") {
+                        deleteDir()
                         unstash 'built-draft'
                         timeout (time: 5, unit: 'MINUTES') {
                             sh 'make memcheck && exit 0 ; echo "Re-running failed ($?) memcheck with greater verbosity" >&2 ; make VERBOSE=1 memcheck-verbose'
                         }
                         sh 'echo "Are GitIgnores good after make memcheck with drafts? (should have no output below)"; git status -s || true'
+                      }
                     }
                 }
                 stage ('memcheck without DRAFT') {
                     steps {
+                      dir(".test/memcheck-withoutDRAFT") {
+                        deleteDir()
                         unstash 'built-nondraft'
                         timeout (time: 5, unit: 'MINUTES') {
                             sh 'make memcheck && exit 0 ; echo "Re-running failed ($?) memcheck with greater verbosity" >&2 ; make VERBOSE=1 memcheck-verbose'
                         }
                         sh 'echo "Are GitIgnores good after make memcheck without drafts? (should have no output below)"; git status -s || true'
+                      }
                     }
                 }
                 stage ('distcheck with DRAFT') {
                     steps {
+                      dir(".test/distcheck-withDRAFT") {
+                        deleteDir()
                         unstash 'built-draft'
                         timeout (time: 10, unit: 'MINUTES') {
                             sh 'make distcheck'
                         }
                         sh 'echo "Are GitIgnores good after make distcheck with drafts? (should have no output below)"; git status -s || true'
+                      }
                     }
                 }
                 stage ('distcheck without DRAFT') {
                     steps {
+                      dir(".test/distcheck-withoutDRAFT") {
+                        deleteDir()
                         unstash 'built-nondraft'
                         timeout (time: 10, unit: 'MINUTES') {
                             sh 'make distcheck'
                         }
                         sh 'echo "Are GitIgnores good after make distcheck without drafts? (should have no output below)"; git status -s || true'
+                      }
                     }
                 }
             }
