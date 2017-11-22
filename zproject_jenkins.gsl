@@ -167,6 +167,14 @@ pipeline {
                               || params.DEPLOY_REPORT_RESULT == null
                                 ) {
                                 echo "Sanity: a first run of a newly spawned MultiBranch Pipeline job happens without regard for parameter processing at all - reschedule myself until (default) params are recognized"
+                                build job: "\$\{JOB_NAME}", parameters: [],
+                                    quietPeriod: 1, wait: false, propagate: true
+                            } else {
+                                echo "Sanity: no build params are NULL"
+                            }
+                        }
+                        script {
+                                echo "Build params values: build # ${BUILD_NUMBER} / ${env.BUILD_NUMBER}"
                                 echo "${params.DO_BUILD_WITHOUT_DRAFT_API}"
                                 echo "${params.DO_BUILD_WITH_DRAFT_API}"
                                 echo "${params.DO_BUILD_DOCS}"
@@ -176,9 +184,6 @@ pipeline {
                                 echo "${params.DEPLOY_BRANCH_PATTERN}"
                                 echo "${params.DEPLOY_JOB_NAME}"
                                 echo "${params.DEPLOY_REPORT_RESULT}"
-                                build job: "\$\{JOB_NAME}", parameters: [],
-                                    quietPeriod: 1, wait: false, propagate: true
-                            }
                         }
                         sh './autogen.sh'
                         stash (name: 'prepped', includes: '**/*')
