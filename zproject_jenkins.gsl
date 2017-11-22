@@ -145,8 +145,9 @@ pipeline {
     triggers {
         pollSCM 'H/5 * * * *'
     }
-.# TODO: augment the envvars to benefit from CCACHE (PATH for the binaries, CCACHE_BASEDIR to cache the project objects relative to its random workspace name)
 .# TODO: Add a --enable-address-sanitizer=yes matrix
+// Note: your Jenkins setup may benefit from similar setup on side of agents:
+//        PATH="/usr/lib64/ccache:/usr/lib/ccache:/usr/bin:/bin:\$\{PATH}"
     stages {
         stage ('prepare') {
 .       jenkins_agent (project, 0)
@@ -166,8 +167,8 @@ pipeline {
                         deleteDir()
 .       endif
                         unstash 'prepped'
-                        sh './configure --enable-drafts=yes'
-                        sh 'make -k -j4 || make'
+                        sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; ./configure --enable-drafts=yes'
+                        sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make -k -j4 || make'
                         sh 'echo "Are GitIgnores good after make with drafts? (should have no output below)"; git status -s || true'
                         stash (name: 'built-draft', includes: '**/*')
 .       if !(isSingle_jenkins_agent (project, 0))
@@ -184,8 +185,8 @@ pipeline {
                         deleteDir()
 .       endif
                         unstash 'prepped'
-                        sh './configure --enable-drafts=no'
-                        sh 'make -k -j4 || make'
+                        sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; ./configure --enable-drafts=no'
+                        sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make -k -j4 || make'
                         sh 'echo "Are GitIgnores good after make without drafts? (should have no output below)"; git status -s || true'
                         stash (name: 'built-nondraft', includes: '**/*')
 .       if !(isSingle_jenkins_agent (project, 0))
@@ -202,8 +203,8 @@ pipeline {
                         deleteDir()
 .       endif
                         unstash 'prepped'
-                        sh './configure --enable-drafts=yes --with-docs=yes'
-                        sh 'make -k -j4 || make'
+                        sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; ./configure --enable-drafts=yes --with-docs=yes'
+                        sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make -k -j4 || make'
                         sh 'echo "Are GitIgnores good after make with docs? (should have no output below)"; git status -s || true'
 .       if !(isSingle_jenkins_agent (project, 0))
                       }
@@ -224,7 +225,7 @@ pipeline {
 .       endif
                         unstash 'built-draft'
                         timeout (time: 5, unit: 'MINUTES') {
-                            sh 'make check'
+                            sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make check'
                         }
                         sh 'echo "Are GitIgnores good after make check with drafts? (should have no output below)"; git status -s || true'
 .       if !(isSingle_jenkins_agent (project, 0))
@@ -242,7 +243,7 @@ pipeline {
 .       endif
                         unstash 'built-nondraft'
                         timeout (time: 5, unit: 'MINUTES') {
-                            sh 'make check'
+                            sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make check'
                         }
                         sh 'echo "Are GitIgnores good after make check without drafts? (should have no output below)"; git status -s || true'
 .       if !(isSingle_jenkins_agent (project, 0))
@@ -260,7 +261,7 @@ pipeline {
 .       endif
                         unstash 'built-draft'
                         timeout (time: 5, unit: 'MINUTES') {
-                            sh 'make memcheck && exit 0 ; echo "Re-running failed ($?) memcheck with greater verbosity" >&2 ; make VERBOSE=1 memcheck-verbose'
+                            sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make memcheck && exit 0 ; echo "Re-running failed ($?) memcheck with greater verbosity" >&2 ; make VERBOSE=1 memcheck-verbose'
                         }
                         sh 'echo "Are GitIgnores good after make memcheck with drafts? (should have no output below)"; git status -s || true'
 .       if !(isSingle_jenkins_agent (project, 0))
@@ -278,7 +279,7 @@ pipeline {
 .       endif
                         unstash 'built-nondraft'
                         timeout (time: 5, unit: 'MINUTES') {
-                            sh 'make memcheck && exit 0 ; echo "Re-running failed ($?) memcheck with greater verbosity" >&2 ; make VERBOSE=1 memcheck-verbose'
+                            sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make memcheck && exit 0 ; echo "Re-running failed ($?) memcheck with greater verbosity" >&2 ; make VERBOSE=1 memcheck-verbose'
                         }
                         sh 'echo "Are GitIgnores good after make memcheck without drafts? (should have no output below)"; git status -s || true'
 .       if !(isSingle_jenkins_agent (project, 0))
@@ -296,7 +297,7 @@ pipeline {
 .       endif
                         unstash 'built-draft'
                         timeout (time: 10, unit: 'MINUTES') {
-                            sh 'make distcheck'
+                            sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make distcheck'
                         }
                         sh 'echo "Are GitIgnores good after make distcheck with drafts? (should have no output below)"; git status -s || true'
 .       if !(isSingle_jenkins_agent (project, 0))
@@ -314,7 +315,7 @@ pipeline {
 .       endif
                         unstash 'built-nondraft'
                         timeout (time: 10, unit: 'MINUTES') {
-                            sh 'make distcheck'
+                            sh 'CCACHE_BASEDIR="`pwd`" ; export CCACHE_BASEDIR; make distcheck'
                         }
                         sh 'echo "Are GitIgnores good after make distcheck without drafts? (should have no output below)"; git status -s || true'
 .       if !(isSingle_jenkins_agent (project, 0))
