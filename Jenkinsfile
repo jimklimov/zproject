@@ -121,9 +121,9 @@ pipeline {
                     }
                 }
                 stage ('memcheck without DRAFT') {
+                    when { expression { return ( params.DO_BUILD_WITHOUT_DRAFT_API && params.DO_TEST_MEMCHECK ) } }
                     agent { label "linux || macosx || bsd || solaris || posix || windows" }
                     steps {
-                    when { expression { return ( params.DO_BUILD_WITHOUT_DRAFT_API && params.DO_TEST_MEMCHECK ) } }
                         unstash 'built-nondraft'
                         timeout (time: 5, unit: 'MINUTES') {
                             sh 'make memcheck && exit 0 ; echo "Re-running failed ($?) memcheck with greater verbosity" >&2 ; make VERBOSE=1 memcheck-verbose'
