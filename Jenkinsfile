@@ -74,8 +74,8 @@ pipeline {
                               || params.DO_TEST_CHECK == null
                               || params.DO_TEST_MEMCHECK == null
                               || params.DO_TEST_DISTCHECK == null
-                              || params.DEFAULT_DEPLOY_BRANCH_PATTERN == null
-                              || params.DEFAULT_DEPLOY_JOB_NAME == null
+                              || params.DEPLOY_BRANCH_PATTERN == null
+                              || params.DEPLOY_JOB_NAME == null
                               || params.DEPLOY_REPORT_RESULT == null
                                 ) {
                                 echo "Sanity: a first run of a newly spawned MultiBranch Pipeline job happens without regard for parameter processing at all - reschedule myself until (default) params are recognized"
@@ -85,8 +85,8 @@ pipeline {
                                 echo "${params.DO_TEST_CHECK}"
                                 echo "${params.DO_TEST_MEMCHECK}"
                                 echo "${params.DO_TEST_DISTCHECK}"
-                                echo "${params.DEFAULT_DEPLOY_BRANCH_PATTERN}"
-                                echo "${params.DEFAULT_DEPLOY_JOB_NAME}"
+                                echo "${params.DEPLOY_BRANCH_PATTERN}"
+                                echo "${params.DEPLOY_JOB_NAME}"
                                 echo "${params.DEPLOY_REPORT_RESULT}"
                                 build job: "${JOB_NAME}", parameters: [],
                                     quietPeriod: 1, wait: false, propagate: true
