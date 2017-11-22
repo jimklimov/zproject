@@ -88,7 +88,7 @@ pipeline {
         stage ('check') {
             parallel {
                 stage ('check with DRAFT') {
-                    when { allOf { environment name:'DO_BUILD_WITH_DRAFT_API', value:'true'; environment name:'DO_TEST_CHECK', value:'true' } }
+                    when { expression { return ( params.DO_BUILD_WITH_DRAFT_API && params.DO_TEST_CHECK ) } }
                     agent { label "linux || macosx || bsd || solaris || posix || windows" }
                     steps {
                         unstash 'built-draft'
@@ -99,7 +99,7 @@ pipeline {
                     }
                 }
                 stage ('check without DRAFT') {
-                    when { allOf { environment name:'DO_BUILD_WITHOUT_DRAFT_API', value:'true'; environment name:'DO_TEST_CHECK', value:'true' } }
+                    when { expression { return ( params.DO_BUILD_WITHOUT_DRAFT_API && params.DO_TEST_CHECK ) } }
                     agent { label "linux || macosx || bsd || solaris || posix || windows" }
                     steps {
                         unstash 'built-nondraft'
@@ -110,7 +110,7 @@ pipeline {
                     }
                 }
                 stage ('memcheck with DRAFT') {
-                    when { allOf { environment name:'DO_BUILD_WITH_DRAFT_API', value:'true'; environment name:'DO_TEST_MEMCHECK', value:'true' } }
+                    when { expression { return ( params.DO_BUILD_WITH_DRAFT_API && params.DO_TEST_MEMCHECK ) } }
                     agent { label "linux || macosx || bsd || solaris || posix || windows" }
                     steps {
                         unstash 'built-draft'
@@ -123,7 +123,7 @@ pipeline {
                 stage ('memcheck without DRAFT') {
                     agent { label "linux || macosx || bsd || solaris || posix || windows" }
                     steps {
-                    when { allOf { environment name:'DO_BUILD_WITHOUT_DRAFT_API', value:'true'; environment name:'DO_TEST_MEMCHECK', value:'true' } }
+                    when { expression { return ( params.DO_BUILD_WITHOUT_DRAFT_API && params.DO_TEST_MEMCHECK ) } }
                         unstash 'built-nondraft'
                         timeout (time: 5, unit: 'MINUTES') {
                             sh 'make memcheck && exit 0 ; echo "Re-running failed ($?) memcheck with greater verbosity" >&2 ; make VERBOSE=1 memcheck-verbose'
@@ -132,7 +132,7 @@ pipeline {
                     }
                 }
                 stage ('distcheck with DRAFT') {
-                    when { allOf { environment name:'DO_BUILD_WITH_DRAFT_API', value:'true'; environment name:'DO_TEST_DISTCHECK', value:'true' } }
+                    when { expression { return ( params.DO_BUILD_WITH_DRAFT_API && params.DO_TEST_DISTCHECK ) } }
                     agent { label "linux || macosx || bsd || solaris || posix || windows" }
                     steps {
                         unstash 'built-draft'
@@ -143,7 +143,7 @@ pipeline {
                     }
                 }
                 stage ('distcheck without DRAFT') {
-                    when { allOf { environment name:'DO_BUILD_WITHOUT_DRAFT_API', value:'true'; environment name:'DO_TEST_DISTCHECK', value:'true' } }
+                    when { expression { return ( params.DO_BUILD_WITHOUT_DRAFT_API && params.DO_TEST_DISTCHECK ) } }
                     agent { label "linux || macosx || bsd || solaris || posix || windows" }
                     steps {
                         unstash 'built-nondraft'
