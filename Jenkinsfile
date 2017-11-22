@@ -12,21 +12,48 @@
 
 pipeline {
     agent none
+    parameters {
+        booleanParam (
+            defaultValue: true,
+            description: 'Attempt build without DRAFT API in this run?',
+            name: 'DO_BUILD_WITHOUT_DRAFT_API')
+        booleanParam (
+            defaultValue: true,
+            description: 'Attempt build with DRAFT API in this run?',
+            name: 'DO_BUILD_WITH_DRAFT_API')
+        booleanParam (
+            defaultValue: true,
+            description: 'Attempt build with docs in this run?',
+            name: 'DO_BUILD_DOCS')
+        booleanParam (
+            defaultValue: true,
+            description: 'Attempt "make check" in this run?',
+            name: 'DO_TEST_CHECK')
+        booleanParam (
+            defaultValue: false,
+            description: 'Attempt "make memcheck" in this run?',
+            name: 'DO_TEST_MEMCHECK')
+        booleanParam (
+            defaultValue: false,
+            description: 'Attempt "make distcheck" in this run?',
+            name: 'DO_TEST_DISTCHECK')
+    }
     triggers {
         pollSCM 'H/5 * * * *'
     }
     stages {
         stage ('prepare') {
-                agent { label "linux || macosx || bsd || solaris || posix || windows" }
-            steps {
-                sh './autogen.sh'
-                stash (name: 'prepped', includes: '**/*')
-            }
+                    agent { label "linux || macosx || bsd || solaris || posix || windows" }
+                    steps {
+                        sh './autogen.sh'
+                        stash (name: 'prepped', includes: '**/*')
+                    }
         }
         stage ('compile') {
             parallel {
                 stage ('build with DRAFT') {
-                agent { label "linux || macosx || bsd || solaris || posix || windows" }
+                    when { environment name:'DO_BUILD_WITH_DRAFT_API', value:'true' }
+                    agent { label "linux || macosx || bsd || solaris || posix || windows" }
                     steps {
                         unstash 'prepped'
                         sh './configure --enable-drafts=yes'
@@ -36,7 +63,8 @@ pipeline {
                     }
                 }
                 stage ('build without DRAFT') {
-                agent { label "linux || macosx || bsd || solaris || posix || windows" }
+                    when { environment name:'DO_BUILD_WITHOUT_DRAFT_API', value:'true' }
+                    agent { label "linux || macosx || bsd || solaris || posix || windows" }
                     steps {
                         unstash 'prepped'
                         sh './configure --enable-drafts=no'
@@ -46,7 +74,8 @@ pipeline {
                     }
                 }
                 stage ('build with DOCS') {
-                agent { label "linux || macosx || bsd || solaris || posix || windows" }
+                    when { environment name:'DO_BUILD_WITH_DOCS', value:'true' }
+                    agent { label "linux || macosx || bsd || solaris || posix || windows" }
                     steps {
                         unstash 'prepped'
                         sh './configure --enable-drafts=yes --with-docs=yes'
@@ -59,7 +88,8 @@ pipeline {
         stage ('check') {
             parallel {
                 stage ('check with DRAFT') {
-                agent { label "linux || macosx || bsd || solaris || posix || windows" }
+                    when { allOf { environment name:'DO_BUILD_WITH_DRAFT_API', value:'true'; environment name:'DO_TEST_CHECK', value:'true' } }
+                    agent { label "linux || macosx || bsd || solaris || posix || windows" }
                     steps {
                         unstash 'built-draft'
                         timeout (time: 5, unit: 'MINUTES') {
@@ -69,7 +99,8 @@ pipeline {
                     }
                 }
                 stage ('check without DRAFT') {
-                agent { label "linux || macosx || bsd || solaris || posix || windows" }
+                    when { allOf { environment name:'DO_BUILD_WITHOUT_DRAFT_API', value:'true'; environment name:'DO_TEST_CHECK', value:'true' } }
+                    agent { label "linux || macosx || bsd || solaris || posix || windows" }
                     steps {
                         unstash 'built-nondraft'
                         timeout (time: 5, unit: 'MINUTES') {
@@ -79,7 +110,8 @@ pipeline {
                     }
                 }
                 stage ('memcheck with DRAFT') {
-                agent { label "linux || macosx || bsd || solaris || posix || windows" }
+                    when { allOf { environment name:'DO_BUILD_WITH_DRAFT_API', value:'true'; environment name:'DO_TEST_MEMCHECK', value:'true' } }
+                    agent { label "linux || macosx || bsd || solaris || posix || windows" }
                     steps {
                         unstash 'built-draft'
                         timeout (time: 5, unit: 'MINUTES') {
@@ -89,8 +121,9 @@ pipeline {
                     }
                 }
                 stage ('memcheck without DRAFT') {
-                agent { label "linux || macosx || bsd || solaris || posix || windows" }
+                    agent { label "linux || macosx || bsd || solaris || posix || windows" }
                     steps {
+                    when { allOf { environment name:'DO_BUILD_WITHOUT_DRAFT_API', value:'true'; environment name:'DO_TEST_MEMCHECK', value:'true' } }
                         unstash 'built-nondraft'
                         timeout (time: 5, unit: 'MINUTES') {
                             sh 'make memcheck && exit 0 ; echo "Re-running failed ($?) memcheck with greater verbosity" >&2 ; make VERBOSE=1 memcheck-verbose'
@@ -99,7 +132,8 @@ pipeline {
                     }
                 }
                 stage ('distcheck with DRAFT') {
-                agent { label "linux || macosx || bsd || solaris || posix || windows" }
+                    when { allOf { environment name:'DO_BUILD_WITH_DRAFT_API', value:'true'; environment name:'DO_TEST_DISTCHECK', value:'true' } }
+                    agent { label "linux || macosx || bsd || solaris || posix || windows" }
                     steps {
                         unstash 'built-draft'
                         timeout (time: 10, unit: 'MINUTES') {
@@ -109,7 +143,8 @@ pipeline {
                     }
                 }
                 stage ('distcheck without DRAFT') {
-                agent { label "linux || macosx || bsd || solaris || posix || windows" }
+                    when { allOf { environment name:'DO_BUILD_WITHOUT_DRAFT_API', value:'true'; environment name:'DO_TEST_DISTCHECK', value:'true' } }
+                    agent { label "linux || macosx || bsd || solaris || posix || windows" }
                     steps {
                         unstash 'built-nondraft'
                         timeout (time: 10, unit: 'MINUTES') {
