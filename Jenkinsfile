@@ -78,6 +78,7 @@ pipeline {
                               || params.DEPLOY_BRANCH_PATTERN == null
                               || params.DEPLOY_JOB_NAME == null
                               || params.DEPLOY_REPORT_RESULT == null
+                              || BUILD_NUMBER < 3
                                 ) {
                                 echo "Sanity: a first run of a newly spawned MultiBranch Pipeline job happens without regard for parameter processing at all - reschedule myself until (default) params are recognized"
                                 build job: "${JOB_NAME}", parameters: [],
