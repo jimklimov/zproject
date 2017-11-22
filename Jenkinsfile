@@ -67,6 +67,22 @@ pipeline {
     stages {
         stage ('prepare') {
                     steps {
+                        script {
+                            if ( params.DO_BUILD_WITHOUT_DRAFT_API == null
+                              || params.DO_BUILD_WITH_DRAFT_API == null
+                              || params.DO_BUILD_DOCS == null
+                              || params.DO_TEST_CHECK == null
+                              || params.DO_TEST_MEMCHECK == null
+                              || params.DO_TEST_DISTCHECK == null
+                              || params.DEFAULT_DEPLOY_BRANCH_PATTERN == null
+                              || params.DEFAULT_DEPLOY_JOB_NAME == null
+                              || params.DEPLOY_REPORT_RESULT == null
+                                ) {
+                                echo "Sanity: a first run of a newly spawned MultiBranch Pipeline job happens without regard for parameter processing at all - reschedule myself until (default) params are recognized"
+                                build job: "${JOB_NAME}", parameters: [],
+                                    quietPeriod: 1, wait: false, propagate: true
+                            }
+                        }
                         sh './autogen.sh'
                         stash (name: 'prepped', includes: '**/*')
                     }
