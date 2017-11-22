@@ -195,7 +195,7 @@ pipeline {
         stage ('check') {
             parallel {
                 stage ('check with DRAFT') {
-                    when { allOf { environment name:'DO_BUILD_WITH_DRAFT_API', value:'true'; environment name:'DO_TEST_CHECK', value:'true' } }
+                    when { expression { return ( params.DO_BUILD_WITH_DRAFT_API && params.DO_TEST_CHECK ) } }
 .       jenkins_agent (project, 0)
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
@@ -213,7 +213,7 @@ pipeline {
                     }
                 }
                 stage ('check without DRAFT') {
-                    when { allOf { environment name:'DO_BUILD_WITHOUT_DRAFT_API', value:'true'; environment name:'DO_TEST_CHECK', value:'true' } }
+                    when { expression { return ( params.DO_BUILD_WITHOUT_DRAFT_API && params.DO_TEST_CHECK ) } }
 .       jenkins_agent (project, 0)
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
@@ -231,7 +231,7 @@ pipeline {
                     }
                 }
                 stage ('memcheck with DRAFT') {
-                    when { allOf { environment name:'DO_BUILD_WITH_DRAFT_API', value:'true'; environment name:'DO_TEST_MEMCHECK', value:'true' } }
+                    when { expression { return ( params.DO_BUILD_WITH_DRAFT_API && params.DO_TEST_MEMCHECK ) } }
 .       jenkins_agent (project, 0)
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
@@ -251,7 +251,7 @@ pipeline {
                 stage ('memcheck without DRAFT') {
 .       jenkins_agent (project, 0)
                     steps {
-                    when { allOf { environment name:'DO_BUILD_WITHOUT_DRAFT_API', value:'true'; environment name:'DO_TEST_MEMCHECK', value:'true' } }
+                    when { expression { return ( params.DO_BUILD_WITHOUT_DRAFT_API && params.DO_TEST_MEMCHECK ) } }
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/test-memcheck-withoutDRAFT") {
                         deleteDir()
@@ -267,7 +267,7 @@ pipeline {
                     }
                 }
                 stage ('distcheck with DRAFT') {
-                    when { allOf { environment name:'DO_BUILD_WITH_DRAFT_API', value:'true'; environment name:'DO_TEST_DISTCHECK', value:'true' } }
+                    when { expression { return ( params.DO_BUILD_WITH_DRAFT_API && params.DO_TEST_DISTCHECK ) } }
 .       jenkins_agent (project, 0)
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
@@ -285,7 +285,7 @@ pipeline {
                     }
                 }
                 stage ('distcheck without DRAFT') {
-                    when { allOf { environment name:'DO_BUILD_WITHOUT_DRAFT_API', value:'true'; environment name:'DO_TEST_DISTCHECK', value:'true' } }
+                    when { expression { return ( params.DO_BUILD_WITHOUT_DRAFT_API && params.DO_TEST_DISTCHECK ) } }
 .       jenkins_agent (project, 0)
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
