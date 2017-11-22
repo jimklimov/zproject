@@ -70,7 +70,58 @@ register_target ("jenkins", "pipeline CI script for jenkins")
 */
 
 pipeline {
-.       jenkins_agent (project, 1)
+.  jenkins_agent (project, 1)
+    parameters {
+        booleanParam (
+.  if project.jenkins_build_without_draft_api ?= 0
+            defaultValue: false,
+.  else
+            defaultValue: true,
+.  endif
+            description: 'Attempt build without DRAFT API in this run?',
+            name: 'DO_BUILD_WITHOUT_DRAFT_API')
+        booleanParam (
+.  if project.jenkins_build_with_draft_api ?= 0
+            defaultValue: false,
+.  else
+            defaultValue: true,
+.  endif
+            description: 'Attempt build with DRAFT API in this run?',
+            name: 'DO_BUILD_WITH_DRAFT_API')
+        booleanParam (
+.  if project.jenkins_build_docs ?= 0
+            defaultValue: false,
+.  else
+            defaultValue: true,
+.  endif
+            description: 'Attempt build with docs in this run?',
+            name: 'DO_BUILD_DOCS')
+        booleanParam (
+.  if project.jenkins_test_check ?= 0
+            defaultValue: false,
+.  else
+            defaultValue: true,
+.  endif
+            description: 'Attempt "make check" in this run?',
+            name: 'DO_TEST_CHECK')
+        booleanParam (
+.  if project.jenkins_test_memcheck ?= 0
+            defaultValue: false,
+.  else
+            defaultValue: true,
+.  endif
+            description: 'Attempt "make memcheck" in this run?',
+            name: 'DO_TEST_MEMCHECK')
+        booleanParam (
+.  if ( project.jenkins_test_distcheck ?= 0 | project.jenkins_distcheck ?= 0 )
+.# "distcheck" option is a legacy artifact; use test_distcheck=0 in practice
+            defaultValue: false,
+.  else
+            defaultValue: true,
+.  endif
+            description: 'Attempt "make distcheck" in this run?',
+            name: 'DO_TEST_DISTCHECK')
+    }
     triggers {
         pollSCM 'H/5 * * * *'
     }
@@ -87,6 +138,7 @@ pipeline {
         stage ('compile') {
             parallel {
                 stage ('build with DRAFT') {
+                    when { environment name:'DO_BUILD_WITH_DRAFT_API', value:'true' }
 .       jenkins_agent (project, 0)
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
@@ -104,6 +156,7 @@ pipeline {
                     }
                 }
                 stage ('build without DRAFT') {
+                    when { environment name:'DO_BUILD_WITHOUT_DRAFT_API', value:'true' }
 .       jenkins_agent (project, 0)
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
@@ -121,6 +174,7 @@ pipeline {
                     }
                 }
                 stage ('build with DOCS') {
+                    when { environment name:'DO_BUILD_WITH_DOCS', value:'true' }
 .       jenkins_agent (project, 0)
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
@@ -141,6 +195,7 @@ pipeline {
         stage ('check') {
             parallel {
                 stage ('check with DRAFT') {
+                    when { allOf { environment name:'DO_BUILD_WITH_DRAFT_API', value:'true'; environment name:'DO_TEST_CHECK', value:'true' } }
 .       jenkins_agent (project, 0)
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
@@ -158,6 +213,7 @@ pipeline {
                     }
                 }
                 stage ('check without DRAFT') {
+                    when { allOf { environment name:'DO_BUILD_WITHOUT_DRAFT_API', value:'true'; environment name:'DO_TEST_CHECK', value:'true' } }
 .       jenkins_agent (project, 0)
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
@@ -175,6 +231,7 @@ pipeline {
                     }
                 }
                 stage ('memcheck with DRAFT') {
+                    when { allOf { environment name:'DO_BUILD_WITH_DRAFT_API', value:'true'; environment name:'DO_TEST_MEMCHECK', value:'true' } }
 .       jenkins_agent (project, 0)
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
@@ -194,6 +251,7 @@ pipeline {
                 stage ('memcheck without DRAFT') {
 .       jenkins_agent (project, 0)
                     steps {
+                    when { allOf { environment name:'DO_BUILD_WITHOUT_DRAFT_API', value:'true'; environment name:'DO_TEST_MEMCHECK', value:'true' } }
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/test-memcheck-withoutDRAFT") {
                         deleteDir()
@@ -208,9 +266,8 @@ pipeline {
 .       endif
                     }
                 }
-.  if project.jenkins_distcheck ?= 0
-.  else
                 stage ('distcheck with DRAFT') {
+                    when { allOf { environment name:'DO_BUILD_WITH_DRAFT_API', value:'true'; environment name:'DO_TEST_DISTCHECK', value:'true' } }
 .       jenkins_agent (project, 0)
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
@@ -228,6 +285,7 @@ pipeline {
                     }
                 }
                 stage ('distcheck without DRAFT') {
+                    when { allOf { environment name:'DO_BUILD_WITHOUT_DRAFT_API', value:'true'; environment name:'DO_TEST_DISTCHECK', value:'true' } }
 .       jenkins_agent (project, 0)
                     steps {
 .       if !(isSingle_jenkins_agent (project, 0))
@@ -244,7 +302,6 @@ pipeline {
 .       endif
                     }
                 }
-.  endif
             }
         }
     }
