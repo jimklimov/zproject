@@ -249,9 +249,9 @@ pipeline {
                     }
                 }
                 stage ('memcheck without DRAFT') {
+                    when { expression { return ( params.DO_BUILD_WITHOUT_DRAFT_API && params.DO_TEST_MEMCHECK ) } }
 .       jenkins_agent (project, 0)
                     steps {
-                    when { expression { return ( params.DO_BUILD_WITHOUT_DRAFT_API && params.DO_TEST_MEMCHECK ) } }
 .       if !(isSingle_jenkins_agent (project, 0))
                       dir("tmp/test-memcheck-withoutDRAFT") {
                         deleteDir()
