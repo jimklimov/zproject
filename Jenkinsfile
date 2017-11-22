@@ -30,7 +30,7 @@ pipeline {
             description: 'Name of your job that handles deployments and should accept arguments: DEPLOY_GIT_URL DEPLOY_GIT_BRANCH DEPLOY_GIT_COMMIT -- and it is up to that job what to do with this knowledge (e.g. git archive + push to packaging); leave empty to not deploy',
             name : 'DEPLOY_JOB_NAME')
         booleanParam (
-            defaultValue: true,
+            defaultValue: ( ${DEFAULT_DEPLOY_REPORT_RESULT} ? ${DEFAULT_DEPLOY_REPORT_RESULT} : true ),
             description: 'If the deployment is done, should THIS job wait for it to complete and include its success or failure as the build result (true), or should it schedule the job and exit quickly to free up the executor (false)',
             name: 'DEPLOY_REPORT_RESULT')
         booleanParam (
