@@ -11,7 +11,7 @@
 */
 
 pipeline {
-    agent { label "linux || macosx || bsd || solaris || posix || windows" }
+                    agent { label "linux || macosx || bsd || solaris || posix || windows" }
     parameters {
         // Use DEFAULT_DEPLOY_BRANCH_PATTERN and DEFAULT_DEPLOY_JOB_NAME if
         // defined in this jenkins setup -- in Jenkins Management Web-GUI
@@ -65,14 +65,15 @@ pipeline {
 //        PATH="/usr/lib64/ccache:/usr/lib/ccache:/usr/bin:/bin:${PATH}"
     stages {
         stage ('prepare') {
-            steps {
-                sh './autogen.sh'
-                stash (name: 'prepped', includes: '**/*')
-            }
+                    steps {
+                        sh './autogen.sh'
+                        stash (name: 'prepped', includes: '**/*')
+                    }
         }
         stage ('compile') {
             parallel {
                 stage ('build with DRAFT') {
+                    when { environment name:'DO_BUILD_WITH_DRAFT_API', value:'true' }
                     steps {
                       dir("tmp/build-withDRAFT") {
                         deleteDir()
@@ -85,6 +86,7 @@ pipeline {
                     }
                 }
                 stage ('build without DRAFT') {
+                    when { environment name:'DO_BUILD_WITHOUT_DRAFT_API', value:'true' }
                     steps {
                       dir("tmp/build-withoutDRAFT") {
                         deleteDir()
@@ -97,6 +99,7 @@ pipeline {
                     }
                 }
                 stage ('build with DOCS') {
+                    when { environment name:'DO_BUILD_WITH_DOCS', value:'true' }
                     steps {
                       dir("tmp/build-DOCS") {
                         deleteDir()
@@ -112,6 +115,7 @@ pipeline {
         stage ('check') {
             parallel {
                 stage ('check with DRAFT') {
+                    when { expression { return ( params.DO_BUILD_WITH_DRAFT_API && params.DO_TEST_CHECK ) } }
                     steps {
                       dir("tmp/test-check-withDRAFT") {
                         deleteDir()
@@ -124,6 +128,7 @@ pipeline {
                     }
                 }
                 stage ('check without DRAFT') {
+                    when { expression { return ( params.DO_BUILD_WITHOUT_DRAFT_API && params.DO_TEST_CHECK ) } }
                     steps {
                       dir("tmp/test-check-withoutDRAFT") {
                         deleteDir()
@@ -136,6 +141,7 @@ pipeline {
                     }
                 }
                 stage ('memcheck with DRAFT') {
+                    when { expression { return ( params.DO_BUILD_WITH_DRAFT_API && params.DO_TEST_MEMCHECK ) } }
                     steps {
                       dir("tmp/test-memcheck-withDRAFT") {
                         deleteDir()
@@ -148,6 +154,7 @@ pipeline {
                     }
                 }
                 stage ('memcheck without DRAFT') {
+                    when { expression { return ( params.DO_BUILD_WITHOUT_DRAFT_API && params.DO_TEST_MEMCHECK ) } }
                     steps {
                       dir("tmp/test-memcheck-withoutDRAFT") {
                         deleteDir()
@@ -160,6 +167,7 @@ pipeline {
                     }
                 }
                 stage ('distcheck with DRAFT') {
+                    when { expression { return ( params.DO_BUILD_WITH_DRAFT_API && params.DO_TEST_DISTCHECK ) } }
                     steps {
                       dir("tmp/test-distcheck-withDRAFT") {
                         deleteDir()
@@ -172,6 +180,7 @@ pipeline {
                     }
                 }
                 stage ('distcheck without DRAFT') {
+                    when { expression { return ( params.DO_BUILD_WITHOUT_DRAFT_API && params.DO_TEST_DISTCHECK ) } }
                     steps {
                       dir("tmp/test-distcheck-withoutDRAFT") {
                         deleteDir()
