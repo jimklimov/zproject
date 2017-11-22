@@ -31,14 +31,14 @@ register_target ("jenkins", "pipeline CI script for jenkins")
 .# Project can be built and tested in a single agent, or can spread
 .# the load across executors or even different agents
 .     if defined (project.jenkins_agent_docker)
->                agent \{ docker \{ image '$(project.jenkins_agent_docker:)' } }
+>                   agent \{ docker \{ image '$(project.jenkins_agent_docker:)' } }
 .     elsif defined (project.jenkins_docker)
 .# Legacy naming for the variable
->                agent \{ docker \{ image '$(project.jenkins_docker:)' } }
+>                    agent \{ docker \{ image '$(project.jenkins_docker:)' } }
 .     elsif defined (project.jenkins_agent_label)
->                agent \{ label "$(project.jenkins_agent_label:)" }
+>                    agent \{ label "$(project.jenkins_agent_label:)" }
 .     else
->                agent any
+>                    agent any
 .     endif
 .     return 1
 .   else
