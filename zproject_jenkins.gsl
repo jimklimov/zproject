@@ -326,6 +326,8 @@ pipeline {
             }
         }
         stage ('deploy if appropriate') {
+.       jenkins_agent (project, 0)
+.# No dir needed, this just launches another job
             steps {
                 script {
                     def myDEPLOY_JOB_NAME = sh(returnStdout: true, script: """echo "\$\{params["DEPLOY_JOB_NAME"]}" """).trim();

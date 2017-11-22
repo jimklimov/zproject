@@ -178,6 +178,7 @@ pipeline {
             }
         }
         stage ('deploy if appropriate') {
+                    agent { label "linux || macosx || bsd || solaris || posix || windows" }
             steps {
                 script {
                     def myDEPLOY_JOB_NAME = sh(returnStdout: true, script: """echo "${params["DEPLOY_JOB_NAME"]}" """).trim();
