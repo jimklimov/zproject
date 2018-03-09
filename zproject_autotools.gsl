@@ -426,6 +426,7 @@ BreakConstructorInitializers: AfterColon
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
 SpaceAfterCStyleCast: true
 BreakBeforeTernaryOperators: true
+AlwaysBreakAfterReturnType: All
 .else
 .   echo "NOT regenerating an existing .clang-format file; you might want to move yours out of the way and re-generate the project again to get updated settings"
 .endif

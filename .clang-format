@@ -51,3 +51,4 @@ BreakConstructorInitializers: AfterColon
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
 SpaceAfterCStyleCast: true
 BreakBeforeTernaryOperators: true
+AlwaysBreakAfterReturnType: All
