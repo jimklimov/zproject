@@ -350,7 +350,11 @@ zproject's `project.xml` contains an extensive description of the available conf
 
     <!-- Note: zproject itself uses a customized CI-testing routine
          on Travis CI, not a generated one, so DO NOT ENABLE this one:
-        <target name = "travis" />
+        <target name = "travis">
+            <option name = "require_good_clang_format" value = "0" />
+            <option name = "implement_good_clang_format" value = "cmake" />
+            <option name = "implement_good_clang_format" value = "autotools" />
+        </travis>
     -->
 
     <!-- Jenkins target creates jenkins pipeline
