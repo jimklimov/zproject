@@ -455,6 +455,19 @@ zproject's `project.xml` contains an extensive description of the available conf
          should not. If this bites you, set use_deleteDir_rm_first=1 in
          the project, so the OS native "rm" is tried first.
 
+         The two options do_cleanup_after_build (for parallelized tests)
+         and do_cleanup_after_job control whether the pipeline would by
+         default remove the build/test subdirectory after successful end
+         of stage, and/or cleans the build workspace after the whole job
+         succeeded, respectively. If not set, cleanup is enabled for both
+         and in either case the active options are among build parameters.
+         You might want to keep the built sources to analyze the behavior
+         of your build recipes in a particular environment, thought at a
+         risk of using excessive disk space there. In case of failure the
+         workspace remains on disk to make an in-place analysis possible,
+         and would eat space until you clean it up manually or it would
+         expire according to your Jenkins old-build retention policies.
+
     <target name = "jenkins">
         <option name = "file" value = "Jenkinsfile" />
         <option name = "agent_docker" value = "zeromqorg/czmq" />
@@ -754,14 +767,15 @@ Model is described in `zproject_known_projects.xml` file:
 
 Exemple:
 ```classfilename
-<classfilename use-cxx = "true" keep-tree = "true" pretty-print = "no" source-extension = "cpp" header-extension = "hpp" />
+<classfilename use-cxx = "true" pkgincludedir = "false" keep-tree = "true" pretty-print = "no" source-extension = "cpp" header-extension = "hpp" />
 ```
 
 * use-cxx will force usage (or not) of c++.
-* keep-tree will keeping the include tree on the install, must be used with a conservative name format (ex: pretty-print = "no"). Currently only supported with autotool.
-* pretty-print define the type of class name format change in order to generate the filename. It use the pretty-print option of gsl (see Substituting Symbols and Expressions on https://github.com/imatix/gsl#expressions for more information).
+* keep-tree will keep the include tree structure on the install (as opposed to flat delivery of include files basenames into the single-level target directory), must be used with a conservative name format (ex: pretty-print = "no"). Currently only supported with autotool.
+* pkgincludedir option chooses whether headers of this project should be dumped into the common system includedir (legacy default), or into an includedir/projname subdirectory?. Currently only supported with autotool.
+* pretty-print define the type of class name format change in order to generate the filename. It uses the pretty-print option of gsl (see Substituting Symbols and Expressions on https://github.com/imatix/gsl#expressions for more information).
 * source-extension define the filename extension for source files in this project.
-* header-extension define the filename extension for source files in this project.
+* header-extension define the filename extension for header files in this project.
 
 Default value :
 * pretty-print : substitute_non_alpha_to_make_c_identifier (c option)
