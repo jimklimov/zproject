@@ -251,7 +251,28 @@ matrix:
 #autotools#\
 .endif
         - *pkg_deps_prereqs
-.if project.travis_clangformat_allow_failures ?= 1 | project.travis_distcheck ?= 2
+.if project.travis_check_abi_compliance ?= 1
+.   if project.exports_classes
+# Note: the ABI compliance checker script currently assumes that:
+# 1) Your project sources have a "latest_release" branch or tag
+#    to check out and compare the current commit's ABI to;
+# 2) Prerequisites are available as packages - no custom rebuilds.
+  - env: BUILD_TYPE=abi-compliance-checker
+    os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+        - sourceline: 'deb http://ppa.launchpad.net/hnakamur/universal-ctags/ubuntu bionic main'
+          key_url: 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x60D954A11017341E'
+        packages:
+        - *pkg_deps_common
+        - universal-ctags
+        - abi-dumper
+        - abi-compliance-checker
+.   endif
+.endif
+.if project.travis_clangformat_allow_failures ?= 1 | project.travis_distcheck ?= 2 | project.travis_check_zproject ?= 2
 # Note: "env" lines below must exactly describe a matrix option defined above
   allow_failures:
 .   if project.travis_distcheck ?= 2
@@ -272,27 +293,6 @@ matrix:
 #\
 .       endif
   - env: BUILD_TYPE=clang-format-check CLANG_FORMAT=clang-format-5.0
-.   endif
-.endif
-.if project.travis_check_abi_compliance ?= 1
-.   if project.exports_classes
-# Note: the ABI compliance checker script currently assumes that:
-# 1) Your project sources have a "latest_release" branch or tag
-#    to check out and compare the current commit's ABI to;
-# 2) Prerequisites are available as packages - no custom rebuilds.
-  - env: BUILD_TYPE=abi-compliance-checker
-    os: linux
-    dist: xenial
-    addons:
-      apt:
-        sources:
-        - sourceline: 'deb http://ppa.launchpad.net/hnakamur/universal-ctags/ubuntu bionic main'
-          key_url: 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x60D954A11017341E'
-        packages:
-        - *pkg_deps_common
-        - universal-ctags
-        - abi-dumper
-        - abi-compliance-checker
 .   endif
 .endif
 
