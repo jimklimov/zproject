@@ -819,6 +819,55 @@ case "$CI_TRACE" in
         set -x ;;
 esac
 
+case $TRAVIS_OS_NAME in
+windows)
+    export
+    choco install openjdk
+    export JAVA_HOME="C:\\Program Files\\OpenJDK\\jdk-13.0.2"
+    export BUILD_PREFIX=$TEMP/ci_build
+    # Build will fail if processes are still running at the end of the script.
+    # Gradle by default starts a daemon so consequtive builds are faster.
+    # Therefore instruct gradle not to use its daemon.
+    export GRADLE_OPTS=-Dorg.gradle.daemon=false
+
+    cd ..
+
+.for project.use where !optional & defined (use.repository)
+.   if defined (use.release)
+    git clone --quiet --depth 1 -b $(use.release:) $(use.repository) $(use.project)
+.   else
+    git clone --quiet --depth 1 $(use.repository) $(use.project)
+.   endif
+    cd $(use.project)
+    mkdir build
+    cd build
+    cmake .. -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX -DCMAKE_PREFIX_PATH=$BUILD_PREFIX
+    cmake --build . --config Release --target install
+    cd ../..
+
+    if [ -d "$(use.project)/bindings/jni" ]; then
+        cd $(use.project)/bindings/jni
+        ./gradlew publishToMavenLocal -PbuildPrefix=$BUILD_PREFIX --info
+        cd ../../..
+    fi
+
+.endfor
+    cd $(project.name)
+    mkdir build
+    cd build
+    cmake .. -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX -DCMAKE_PREFIX_PATH=$BUILD_PREFIX
+    cmake --build . --config Release --target install
+    ctest --build-config Release
+    cd ../..
+
+    cd $(project.name)
+    cd bindings/jni
+    ./gradlew build jar -PbuildPrefix=$BUILD_PREFIX -x test --info
+    ./gradlew publishToMavenLocal -PbuildPrefix=$BUILD_PREFIX --info
+
+    exit 0
+esac
+
 case "$BUILD_TYPE" in
 default|default-Werror|default-with-docs|valgrind|clang-format-check)
     LANG=C

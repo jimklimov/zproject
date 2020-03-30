@@ -141,15 +141,19 @@ set(TEST_CLASSES
 )
 
 
-add_custom_target(
-    copy-selftest-ro ALL
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/src/selftest-ro ${PROJECT_BINARY_DIR}/src/selftest-ro
-)
+if (NOT TARGET copy-selftest-ro)
+    add_custom_target(
+        copy-selftest-ro ALL
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/src/selftest-ro ${PROJECT_BINARY_DIR}/src/selftest-ro
+    )
+endif()
 
-add_custom_target(
-    make-selftest-rw ALL
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/src/selftest-rw
-)
+if (NOT TARGET make-selftest-rw)
+    add_custom_target(
+        make-selftest-rw ALL
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/src/selftest-rw
+    )
+endif()
 
 set_directory_properties(
     PROPERTIES
@@ -161,6 +165,13 @@ foreach(TEST_CLASS ${TEST_CLASSES})
         NAME ${TEST_CLASS}
         COMMAND zproject_selftest --continue --verbose --test ${TEST_CLASS}
     )
+    IF (WIN32 AND CMAKE_PREFIX_PATH)
+		file(TO_NATIVE_PATH "${CMAKE_PREFIX_PATH}" CMAKE_PREFIX_PATH_WIN)
+		set_tests_properties(
+			${TEST_CLASS}
+			PROPERTIES ENVIRONMENT "PATH=%PATH%\;${CMAKE_PREFIX_PATH_WIN}\\bin"
+		)
+    ENDIF (WIN32 AND CMAKE_PREFIX_PATH)
     set_tests_properties(
         ${TEST_CLASS}
         PROPERTIES TIMEOUT ${CLASSTEST_TIMEOUT}
@@ -176,7 +187,9 @@ include(CTest)
 ########################################################################
 # cleanup
 ########################################################################
-add_custom_target (distclean @echo Cleaning for source distribution)
+if (NOT TARGET distclean)
+    add_custom_target (distclean @echo Cleaning for source distribution)
+endif()
 
 set(cmake_generated ${PROJECT_BINARY_DIR}/CMakeCache.txt
                     ${PROJECT_BINARY_DIR}/cmake_install.cmake
